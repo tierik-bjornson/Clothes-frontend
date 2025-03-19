@@ -1,4 +1,4 @@
-# Sử dụng Node 18 (LTS) vì Node 23 chưa ổn định
+
 FROM node:18-alpine AS builder
 
 # Cài đặt các dependencies cần thiết để build ứng dụng
