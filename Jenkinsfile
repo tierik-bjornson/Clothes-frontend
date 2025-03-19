@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        nodejs "Node23"
+        nodejs "Node23"  // Đổi thành Node18 thay vì Node23
     }
     environment {
         REGISTRY = 'localhost:80'
@@ -27,6 +27,14 @@ pipeline {
                 }
             }
         }
+        stage('Update npm lockfile') {
+            steps {
+                script {
+                    echo "🔄 Cập nhật package-lock.json"
+                    sh 'npm install --package-lock-only'
+                }
+            }
+        }
         stage('Install Dependencies') {
             steps {
                 script {
@@ -49,7 +57,7 @@ pipeline {
             steps {
                 script {
                     echo "🧪 Chạy test..."
-                    sh 'npm run test || echo "Không có test nào, bỏ qua..."'
+                    sh 'npm test || echo "⚠️ Không có test nào, bỏ qua..."'
                     echo "✅ Test hoàn tất!"
                 }
             }
@@ -67,7 +75,9 @@ pipeline {
             steps {
                 script {
                     echo "🔑 Đăng nhập vào Harbor..."
-                    sh "docker login ${REGISTRY} -u admin -p Harbor12345"
+                    withCredentials([usernamePassword(credentialsId: HARBOR_CREDS, usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')]) {
+                        sh "docker login ${REGISTRY} -u $HARBOR_USER -p $HARBOR_PASS"
+                    }
                     echo "📤 Push image lên Harbor..."
                     sh "docker push ${REGISTRY}/${PROJECT}/${IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
                     sh "docker tag ${REGISTRY}/${PROJECT}/${IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${REGISTRY}/${PROJECT}/${IMAGE_NAME}:latest"
@@ -96,3 +106,4 @@ pipeline {
         }
     }
 }
+
