@@ -30,7 +30,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    echo "📦 Cài đặt dependencies..."
+                    echo "📦 Cài đặt dependencies."
                     sh 'npm install'
                     echo "✅ Cài đặt xong!"
                 }
