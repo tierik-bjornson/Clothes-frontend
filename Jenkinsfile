@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        nodejs "Node23"  // Sử dụng Node.js 18 thay vì Node 23
+        nodejs "Node18"  // Sử dụng Node.js 18 thay vì Node 23
     }
     environment {
         REGISTRY = 'localhost:80'
