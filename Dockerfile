@@ -1,16 +1,19 @@
-# Sử dụng Node 18 (hạ từ Node 23)
+# Sử dụng Node 18 (LTS) vì Node 23 chưa ổn định
 FROM node:18-alpine AS builder
 
-# Cài đặt dependencies cần thiết để build node-sass
-RUN apk add --no-cache python3 make g++ 
+# Cài đặt các dependencies cần thiết để build ứng dụng
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Sao chép package.json để cài dependencies trước
+# Sao chép package.json và package-lock.json để tối ưu cache layer
 COPY package*.json ./
 
-# Cài đặt các package (bật optional cho node-sass nếu cần)
-RUN npm install --unsafe-perm
+# Cập nhật npm lên bản mới nhất để tránh lỗi "old lockfile"
+RUN npm install -g npm@latest
+
+# Chạy npm ci thay vì npm install để đảm bảo lockfile được sử dụng đúng
+RUN npm ci --unsafe-perm --legacy-peer-deps
 
 # Copy toàn bộ mã nguồn vào container
 COPY . .
@@ -24,9 +27,12 @@ FROM nginx:alpine
 # Sao chép build từ bước builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Cấu hình Nginx
+# Sao chép file cấu hình Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Mở cổng 80
 EXPOSE 80
+
+# Chạy Nginx
+CMD ["nginx", "-g", "daemon off;"]
 
